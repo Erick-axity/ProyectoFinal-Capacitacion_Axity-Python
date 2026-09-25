@@ -1,0 +1,23 @@
+repos:
+  # 1. RUFF (Linter y Reemplazo de Isort)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.5
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+
+  # 2. RUFF FORMAT (El Reemplazo oficial de Black)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.5
+    hooks:
+      - id: ruff-format
+
+  # 3. MYPY (El Inspector de Tipos Estáticos)
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        exclude: '.*alembic/.*'

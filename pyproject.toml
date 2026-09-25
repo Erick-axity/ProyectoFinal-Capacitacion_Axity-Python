@@ -1,0 +1,51 @@
+[project]
+name = "proyectofinal-capacitacion-axity-python"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Erick Sebastian Meneses Navarro",email = "erick.meneses@axity.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12, <4.0"
+dependencies = [
+    "fastapi (>=0.141.1,<0.142.0)",
+    "uvicorn (>=0.53.0,<0.54.0)",
+    "sqlalchemy (>=2.1.0,<3.0.0)",
+    "alembic (>=1.20.0,<2.0.0)",
+    "pydantic (>=2.13.5,<3.0.0)",
+    "pydantic-settings (>=2.15.0,<3.0.0)",
+    "pyjwt (>=2.15.0,<3.0.0)",
+    "passlib (>=1.7.4,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "pytest-cov (>=7.1.0,<8.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "ruff (>=0.16.9,<0.17.0)",
+    "mypy (>=2.3.1,<3.0.0)",
+    "pre-commit (>=4.6.2,<5.0.0)",
+    "pip-audit (>=2.10.1,<3.0.0)"
+]
+
+[tool.ruff.lint]
+# Seleccionamos las reglas de Error (E), Fallos (F) y el módulo Isort (I)
+select = ["E", "F", "I"]
+
+[tool.mypy]
+exclude = ["alembic/"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "sqlalchemy.*",
+    "alembic.*",
+    "passlib.*",
+]
+ignore_missing_imports = true
