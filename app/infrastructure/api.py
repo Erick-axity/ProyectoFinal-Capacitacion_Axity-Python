@@ -1,6 +1,8 @@
 from typing import List
 
+import jwt
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 
 from app.application.use_cases import (
     CreateOrderDTO,
@@ -13,30 +15,49 @@ from app.infrastructure.dependencies import (
     get_get_orders_use_case,
 )
 
-# Creamos el Router de FastAPI
-router = APIRouter(prefix="/api/v1/orders", tags=["Orders"])
+# ⬅️ IMPORTAMOS NUESTRO ESCUDO DE SEGURIDAD
+from app.infrastructure.security import ALGORITHM, SECRET_KEY, verificar_token_jwt
+
+# 1. ROUTER DE AUTENTICACIÓN (Para conseguir la llave)
+auth_router = APIRouter(prefix="/api/v1/auth", tags=["Autenticación"])
 
 
-@router.post("/", response_model=OrderResponseDTO, status_code=201)
+@auth_router.post("/login")
+def login_fake(form_data: OAuth2PasswordRequestForm = Depends()):
+    """Simula una base de datos de usuarios. Usuario: admin, Password: 123"""
+    if form_data.username == "admin" and form_data.password == "123":
+        # Creamos y sellamos el Token JWT
+        token_jwt = jwt.encode(
+            {"sub": form_data.username}, SECRET_KEY, algorithm=ALGORITHM
+        )
+        return {"access_token": token_jwt, "token_type": "bearer"}
+
+    raise HTTPException(status_code=400, detail="Credenciales incorrectas")
+
+
+# 2. ROUTER DE ÓRDENES (Ahora con Candado)
+# ⬅️ IMPORTANTE: dependencies=[Depends(verificar_token_jwt)] protege TODO el router
+orders_router = APIRouter(
+    prefix="/api/v1/orders",
+    tags=["Orders"],
+    dependencies=[Depends(verificar_token_jwt)],
+)
+
+
+@orders_router.post("/", response_model=OrderResponseDTO, status_code=201)
 def crear_nueva_orden(
     dto: CreateOrderDTO,
     use_case: CreateOrderUseCase = Depends(get_create_order_use_case),
 ):
-    """
-    Recibe un DTO validado, se lo avienta al Caso de Uso y devuelve la respuesta.
-    El Endpoint no tiene sentencias 'if' ni lógica de negocio.
-    """
     try:
         return use_case.ejecutar(dto)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/", response_model=List[OrderResponseDTO])
+@orders_router.get("/", response_model=List[OrderResponseDTO])
 def listar_ordenes(use_case: GetOrdersUseCase = Depends(get_get_orders_use_case)):
     ordenes_entidad = use_case.ejecutar_todas()
-
-    # Mapeamos las Entidades crudas a DTOs formateados para la web
     return [
         OrderResponseDTO(
             id=o.id,
