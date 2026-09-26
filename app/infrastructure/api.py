@@ -10,13 +10,16 @@ from app.application.use_cases import (
     GetOrdersUseCase,
     OrderResponseDTO,
 )
+
+# 2. Traemos los secretos seguros desde nuestra Configuración
+from app.infrastructure.config import settings
 from app.infrastructure.dependencies import (
     get_create_order_use_case,
     get_get_orders_use_case,
 )
 
-# ⬅️ IMPORTAMOS NUESTRO ESCUDO DE SEGURIDAD
-from app.infrastructure.security import ALGORITHM, SECRET_KEY, verificar_token_jwt
+# 1. Traemos SOLO el verificador de seguridad
+from app.infrastructure.security import verificar_token_jwt
 
 # 1. ROUTER DE AUTENTICACIÓN (Para conseguir la llave)
 auth_router = APIRouter(prefix="/api/v1/auth", tags=["Autenticación"])
@@ -24,11 +27,12 @@ auth_router = APIRouter(prefix="/api/v1/auth", tags=["Autenticación"])
 
 @auth_router.post("/login")
 def login_fake(form_data: OAuth2PasswordRequestForm = Depends()):
-    """Simula una base de datos de usuarios. Usuario: admin, Password: 123"""
     if form_data.username == "admin" and form_data.password == "123":
-        # Creamos y sellamos el Token JWT
+        # ⬅️ AQUÍ: Usamos settings en lugar de SECRET_KEY
         token_jwt = jwt.encode(
-            {"sub": form_data.username}, SECRET_KEY, algorithm=ALGORITHM
+            {"sub": form_data.username},
+            settings.jwt_secret_key.get_secret_value(),
+            algorithm=settings.algorithm,
         )
         return {"access_token": token_jwt, "token_type": "bearer"}
 
