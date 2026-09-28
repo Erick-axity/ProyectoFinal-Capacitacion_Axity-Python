@@ -38,6 +38,7 @@ dev = [
 [tool.ruff.lint]
 # Seleccionamos las reglas de Error (E), Fallos (F) y el módulo Isort (I)
 select = ["E", "F", "I"]
+ignore = ["E402"]
 
 [tool.mypy]
 exclude = ["alembic/"]

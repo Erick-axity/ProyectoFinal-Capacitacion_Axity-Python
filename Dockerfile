@@ -11,9 +11,10 @@ RUN pip install "poetry==$POETRY_VERSION"
 
 WORKDIR /build
 
-COPY pyproject.toml poetry.lock ./
+# 1. Copiamos SOLO el TOML para evitar los choques del poetry.lock entre OS
+COPY pyproject.toml ./
 
-# Instalamos solo dependencias de producción
+# 2. Instalamos las dependencias de producción desde cero
 RUN poetry config virtualenvs.create false \
     && poetry install --only main --no-root
 
@@ -24,19 +25,26 @@ FROM python:3.12-slim AS production
 
 WORKDIR /app
 
-# 1. Traemos librerías del builder
+# 1. Traemos las librerías pre-instaladas del Builder
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# 2. Copiamos nuestro código fuente y secretos (El .env debe manejarse distinto en prod real)
+# 2. Copiamos nuestro código fuente (el núcleo Hexagonal)
 COPY app /app/app
+
+# 3. Copiamos el sistema de Migraciones (Alembic)
+COPY alembic /app/alembic
+COPY alembic.ini /app/alembic.ini
+
+# Opcional: Si tienes tu archivo .env con variables de producción
 COPY .env /app/.env
 
-# 3. Hardening (Endurecimiento sin root)
-RUN useradd -m appuser
-USER appuser
+# 4. Hardening y Permisos para SQLite
+# Creamos al usuario 'myuser' y le hacemos dueño de /app para que pueda crear el archivo .sqlite
+RUN useradd -m myuser && chown -R myuser /app
+USER myuser
 
 EXPOSE 8000
 
-# 4. Arrancamos Uvicorn apuntando a nuestro main
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 5. El Script de Arranque (Migrar y Encender)
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

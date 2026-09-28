@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional
 
 from sqlalchemy import Float, Integer, String, create_engine
@@ -7,7 +8,9 @@ from app.application.ports import OrderRepository
 from app.domain.models import OrderEntity, StatusOrden
 
 # Configuración de SQLAlchemy
-DATABASE_URL = "sqlite:///orders_db.sqlite"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+db_path = os.path.join(BASE_DIR, "orders_db.sqlite")
+DATABASE_URL = f"sqlite:///{db_path}"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 
@@ -24,10 +27,6 @@ class OrderModel(Base):
     precio: Mapped[float] = mapped_column(Float)
     cantidad: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(50))
-
-
-# Crear tablas
-Base.metadata.create_all(bind=engine)
 
 
 # =====================================================================
