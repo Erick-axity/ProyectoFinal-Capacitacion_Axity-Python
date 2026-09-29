@@ -1,3 +1,5 @@
+import uuid  # ⬅️ IMPORTANTE: Traemos el generador de IDs únicos
+
 from sqlalchemy.orm import Session
 
 from app.domain.models import OrderEntity
@@ -9,11 +11,15 @@ def test_contrato_repositorio_sql():
     """
     Prueba de Contrato: Valida que el adaptador
     SQL respete los métodos del Puerto
-    y sea capaz de guardar y recuperar entidades puras de dominio.
+    y sea capaz de guardar y recuperar
+    entidades puras de dominio.
     """
-    # 1. Instanciamos la Entidad de Dominio (No sabe nada de SQL)
+    # Generamos un ID dinámico para que
+    # el test pueda correr infinitas veces sin chocar
+    id_dinamico = str(uuid.uuid4())
+
     orden_test = OrderEntity(
-        id="999-TEST", cliente_id=1, producto="Test Contract", precio=10.0, cantidad=1
+        id=id_dinamico, cliente_id=1, producto="Test Contract", precio=10.0, cantidad=1
     )
 
     with Session(engine) as session:
@@ -26,9 +32,11 @@ def test_contrato_repositorio_sql():
 
         # 3. Comprobamos el comportamiento (Insert y Select reales)
         repo.guardar(orden_test)
-        orden_recuperada = repo.obtener_por_id("999-TEST")
 
-        # 4. Validamos que recupere la misma información que entró
+        # 4. Buscamos usando el mismo ID dinámico
+        orden_recuperada = repo.obtener_por_id(id_dinamico)
+
+        # 5. Validamos
         assert orden_recuperada is not None
-        assert orden_recuperada.id == "999-TEST"
+        assert orden_recuperada.id == id_dinamico
         assert orden_recuperada.producto == "Test Contract"
