@@ -12,7 +12,7 @@ jobs:
   ci-pipeline:
     runs-on: ubuntu-latest
 
-    # ⬅️ IMPORTANTE: Le inyectamos variables de entorno falsas al robot
+    # Le inyectamos variables de entorno falsas al robot
     # para que Pydantic arranque felizmente durante las pruebas sin necesitar un archivo .env
     env:
       JWT_SECRET_KEY: "LlaveFalsaParaGitHubActions123!"
@@ -34,7 +34,7 @@ jobs:
         run: poetry lock
 
       - name: Instalar Dependencias
-        run: poetry install
+        run: poetry install --no-root
 
       - name: Auditoría de Seguridad (pip-audit)
         run: poetry run pip-audit

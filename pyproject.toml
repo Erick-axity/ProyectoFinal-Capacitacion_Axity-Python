@@ -50,4 +50,7 @@ module = [
     "alembic.*",
     "passlib.*",
 ]
+
+[tool.poetry]
+package-mode = false
 ignore_missing_imports = true
