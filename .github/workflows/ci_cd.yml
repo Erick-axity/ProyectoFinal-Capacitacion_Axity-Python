@@ -45,7 +45,7 @@ jobs:
       - name: Análisis de Tipos (MyPy)
         run: poetry run mypy .
 
-      # ⬅️ IMPORTANTE: Creamos la tabla 'orders' en la RAM del robot de GitHub
+      # creamos la tabla 'orders' en la RAM del robot de GitHub
       - name: Migraciones de Base de Datos (Alembic)
         run: poetry run alembic upgrade head
 

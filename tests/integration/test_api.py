@@ -23,7 +23,7 @@ def test_health_check():
 def test_crear_orden_flujo_completo():
     """Prueba la creación de la orden inyectando el Token de Seguridad."""
     token = obtener_token()
-    headers = {"Authorization": f"Bearer {token}"}  # ⬅️ Armamos el candado
+    headers = {"Authorization": f"Bearer {token}"}  # Armamos el candado
 
     payload = {
         "cliente_id": 101,
@@ -77,7 +77,7 @@ def test_crear_orden_invalida_atrapada_por_excepcion():
         "cliente_id": 101,
         "producto": "Mouse",
         "precio": 50.0,
-        "cantidad": 0,  # ⬅️ Dato corrupto
+        "cantidad": 0,  # Dato corrupto
     }
 
     response = client.post("/api/v1/orders/", json=payload_malo, headers=headers)

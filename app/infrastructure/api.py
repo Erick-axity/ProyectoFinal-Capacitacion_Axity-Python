@@ -28,7 +28,7 @@ auth_router = APIRouter(prefix="/api/v1/auth", tags=["Autenticación"])
 @auth_router.post("/login")
 def login_fake(form_data: OAuth2PasswordRequestForm = Depends()):
     if form_data.username == "admin" and form_data.password == "123":
-        # ⬅️ AQUÍ: Usamos settings en lugar de SECRET_KEY
+        # Usamos settings en lugar de SECRET_KEY
         token_jwt = jwt.encode(
             {"sub": form_data.username},
             settings.jwt_secret_key.get_secret_value(),
@@ -40,7 +40,7 @@ def login_fake(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 # 2. ROUTER DE ÓRDENES (Ahora con Candado)
-# ⬅️ IMPORTANTE: dependencies=[Depends(verificar_token_jwt)] protege TODO el router
+# dependencies=[Depends(verificar_token_jwt)] protege TODO el router
 orders_router = APIRouter(
     prefix="/api/v1/orders",
     tags=["Orders"],
