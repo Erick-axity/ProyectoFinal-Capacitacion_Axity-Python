@@ -11,6 +11,13 @@ jobs:
   # =====================================================================
   ci-pipeline:
     runs-on: ubuntu-latest
+
+    # ⬅️ IMPORTANTE: Le inyectamos variables de entorno falsas al robot
+    # para que Pydantic arranque felizmente durante las pruebas sin necesitar un archivo .env
+    env:
+      JWT_SECRET_KEY: "LlaveFalsaParaGitHubActions123!"
+      ALGORITHM: "HS256"
+
     steps:
       - name: Descargar Código
         uses: actions/checkout@v4
@@ -23,7 +30,7 @@ jobs:
       - name: Instalar Poetry
         run: pip install poetry==2.0.0
         
-      - name: Sincronizar Lock
+      - name: Sincronizar Lock (Previene choques entre OS)
         run: poetry lock
 
       - name: Instalar Dependencias
@@ -38,8 +45,12 @@ jobs:
       - name: Análisis de Tipos (MyPy)
         run: poetry run mypy .
 
-      - name: Tests E2E (Pytest)
-        run: poetry run pytest
+      # ⬅️ IMPORTANTE: Creamos la tabla 'orders' en la RAM del robot de GitHub
+      - name: Migraciones de Base de Datos (Alembic)
+        run: poetry run alembic upgrade head
+
+      - name: Tests E2E y Coverage (Pytest)
+        run: poetry run pytest -v --cov=app --cov-report=term
 
   # =====================================================================
   # JOB 2: CONSTRUCCIÓN (Continuous Deployment)
@@ -52,4 +63,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Construir Imagen Docker
-        run: docker build -t order-service:latest .
+        run: docker build -t order-service-hexagonal:latest .
